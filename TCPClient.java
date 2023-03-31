@@ -15,19 +15,42 @@ public class TCPClient {
 			out.flush();
 			// reading the reply from the server and printing to the command line
 			String data = in.readLine();
-			System.out.println("Received: "+ data);
+			System.out.println("HELO Received: "+ data);
 			
 			// sending the 'AUTH' with username to server to login
 			out.write(("AUTH Oliver\n").getBytes());
 			out.flush();
-			String data = in.readLine();
-			System.out.println("Recieved: "+ data);
+			data = in.readLine();
+			System.out.println("AUTH Received: "+ data);
+			
+			// implementing while loop for job dispacher
+			while(data != "NONE"|| data != "null"){
+				// send the 'REDY' message to recieve the information about the next job
+				out.write(("REDY").getBytes());
+				out.flush();
+				data = in.readLine();
+				System.out.println("REDY Received: "+ data);
+				// checking if there are any jobs left to run
+				if(data != "NONE" || data != "null"){
+					// qeries the server state information and stores it in data
+					out.write(("GETS ALL").getBytes());
+					out.flush();
+					data = in.readLine();
+					System.out.println("GETS Received: "+ data);
+				}
+			}
+			out.write(("HELO\n").getBytes()); 
+			out.flush();
+			// reading the reply from the server and printing to the command line
+			data = in.readLine();
+			System.out.println("HELO Received: "+ data);
+			
 			
 			// sending the 'QUIT' message to the server
 			out.write(("QUIT\n").getBytes());
 			out.flush();
-			String data = in.readLine();
-			System.out.println("Recieved: "+ data);
+			data = in.readLine();
+			System.out.println("QUIT Received: "+ data);
 			
 		}catch (UnknownHostException e){
 			System.out.println("Sock:"+e.getMessage());
