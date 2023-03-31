@@ -9,13 +9,26 @@ public class TCPClient {
 			s = new Socket("127.0.0.1", serverPort);
 			BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 			DataOutputStream out = new DataOutputStream( s.getOutputStream());
+			
+			// sending the 'HELO' message to server and waiting for reply
 			out.write(("HELO\n").getBytes()); 
 			out.flush();
+			// reading the reply from the server and printing to the command line
 			String data = in.readLine();
 			System.out.println("Received: "+ data);
 			
+			// sending the 'AUTH' with username to server to login
+			out.write(("AUTH Oliver\n").getBytes());
+			out.flush();
+			String data = in.readLine();
+			System.out.println("Recieved: "+ data);
+			
+			// sending the 'QUIT' message to the server
 			out.write(("QUIT\n").getBytes());
 			out.flush();
+			String data = in.readLine();
+			System.out.println("Recieved: "+ data);
+			
 		}catch (UnknownHostException e){
 			System.out.println("Sock:"+e.getMessage());
 		}catch (EOFException e){System.out.println("EOF:"+e.getMessage());
