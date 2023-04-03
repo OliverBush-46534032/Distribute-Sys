@@ -15,13 +15,13 @@ public class TCPClient {
 			out.flush();
 			// reading the reply from the server and printing to the command line
 			String data = in.readLine();
-			//System.out.println("HELO Received: "+ data);
+			System.out.println("HELO Received: "+ data);
 			
 			// sending the 'AUTH' with username to server to login
-			out.write(("AUTH Oliver\n").getBytes());
+			out.write(("AUTH vboxuser\n").getBytes());
 			out.flush();
 			data = in.readLine();
-			//System.out.println("AUTH Received: "+ data);
+			System.out.println("AUTH Received: "+ data);
 			
 			boolean flag = true;
 			String LS = null;
@@ -29,6 +29,7 @@ public class TCPClient {
 			int LSCore = 0;
 			int SID = 0;
 			int JOBID = 0;
+			String[] REDY = null;
 			
 			// implementing while loop for job dispacher
 			while(data.equals("NONE") == false){
@@ -36,9 +37,9 @@ public class TCPClient {
 				out.write(("REDY\n").getBytes());
 				out.flush();
 				data = in.readLine();
-				//System.out.println("Received: "+ data);
+				System.out.println("kbjblibReceived: "+ data);
 				
-				String[] REDY = data.split(" ");
+				REDY = data.split(" ");
 				String JOB = REDY[0];				
 				
 				if(flag){
@@ -46,7 +47,7 @@ public class TCPClient {
 				out.write(("GETS All\n").getBytes());
 				out.flush();
 				data = in.readLine();
-				//System.out.println("Received: "+ data);
+				System.out.println("Received: "+ data);
 				
 				//split the variable data so find the server Info 
 				String[] serverI = data.split(" "); //split the messages by the gaps in the message
@@ -57,8 +58,10 @@ public class TCPClient {
 				out.write(("OK\n").getBytes());
 				out.flush();
 				
-				
-				
+				if(JOB.equals("JCPL")){
+					continue;
+				}
+				else{
 				//start the for loop for the larget server type
 				for(int i = 0; i < nRecs; i++){
 					data = in.readLine();
@@ -82,10 +85,11 @@ public class TCPClient {
 				out.write(("OK\n").getBytes());
 				out.flush();
 				data = in.readLine();
-				//System.out.println("Received: "+ data);
+				System.out.println("Received: "+ data);
 				flag = false;
 				
 				}//end of singular run
+				}
 				
 				
 				
@@ -95,7 +99,7 @@ public class TCPClient {
 					JOBID = Integer.parseInt(REDY[2]);
 					
 					out.write(("SCHD "+JOBID+" "+LS+" "+SID+"\n").getBytes());
-					//System.out.println
+					System.out.println(JOBID);
 					out.flush();
 					
 					SID++;
@@ -104,6 +108,7 @@ public class TCPClient {
 					}
 					
 					while(data == in.readLine()){
+					continue;
 					}
 				}
 					
@@ -114,8 +119,6 @@ public class TCPClient {
 			// sending the 'QUIT' message to the server
 			out.write(("QUIT\n").getBytes());
 			out.flush();
-			data = in.readLine();
-			//System.out.println("Received: "+ data);
 			
 		}catch (UnknownHostException e){
 			System.out.println("Sock:"+e.getMessage());
