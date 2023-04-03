@@ -65,9 +65,16 @@ public class TCPClient {
 							LS = Integer.parseInt(serverState[4]);
 						}
 						
-						if(Integer.parseInt(serverState[4]) == LSCore){
+						if(Integer.parseInt(serverState[4]) == LSCore && serverState[0].equals(LS){
 							LSCount++;
 						}
+					
+					// sends the OK command
+					out.write(("OK\n").getBytes());
+					out.flush();
+					data = in.readLine();
+					System.out.println("OK Received: "+ data);
+					
 					}
 				}
 			}
@@ -94,26 +101,3 @@ public class TCPClient {
 	{System.out.println("close:"+e.getMessage());}}
 	}
 }
-/*import java.net.*;
-import java.io.*;
-public class TCPClient {
-public static void main (String args[]) {
-// arguments supply message and hostname of destination
-Socket s = null;
-try{
-int serverPort = 7896;
-s = new Socket(args[1], serverPort);
-BufferedReader in = new BufferedRead(new InputStreamReader( s.getInputStream()));
-DataOutputStream out =
-new DataOutputStream( s.getOutputStream());
-out.write((args[0]+"\n").getBytes()); // UTF is a string encoding see Sn 4.3
-out.flush();
-String data = in.readLine();
-System.out.println("Received: "+ data) ;
-}catch (UnknownHostException e){
-System.out.println("Sock:"+e.getMessage());
-}catch (EOFException e){System.out.println("EOF:"+e.getMessage());
-}catch (IOException e){System.out.println("IO:"+e.getMessage());}
-}finally {if(s!=null) try {s.close();}catch (IOException e){System.out.println("close:"+e.getMessage());}}
-}*/
-
