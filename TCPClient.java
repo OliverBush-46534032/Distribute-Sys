@@ -31,8 +31,11 @@ public class TCPClient {
 				data = in.readLine();
 				System.out.println("REDY Received: "+ data);
 				
+				String[] JOBREDY = data.split(" ");
+				String JOB = JOBREDY[0];
+				
 				// checking if there are any jobs left to run
-				if(data != "NONE"){
+				//if(JOB == "JOBN"){
 					// qeries the server state information and stores it in data
 					out.write(("GETS All\n").getBytes());
 					out.flush();
@@ -50,24 +53,26 @@ public class TCPClient {
 					data = in.readLine();
 					System.out.println("OK Received: "+ data);
 					
-					String LS;
-					int LSCount;
-					int LSCore;
+					String LS = null;
+					int LSCount = 0;
+					int LSCore = 0;
 					
 					//start the for loop for the larget server type
 					for(int i = 0; i < nRecs; i++){
 						data = in.readLine();
 						String serverState[] = data.split(" ");
 						
-						if(Integer.parseINT(serverState[4]) > LSCore){
+						if(Integer.parseInt(serverState[4]) > LSCore){
 							LS = serverState[0];
-							LS = 1;
-							LS = Integer.parseInt(serverState[4]);
+							LSCount = 1;
+							LSCore = Integer.parseInt(serverState[4]);
 						}
 						
-						if(Integer.parseInt(serverState[4]) == LSCore && serverState[0].equals(LS){
+						if(Integer.parseInt(serverState[4]) == LSCore && serverState[0].equals(LS)){
 							LSCount++;
 						}
+					
+					}
 					
 					// sends the OK command
 					out.write(("OK\n").getBytes());
@@ -75,8 +80,9 @@ public class TCPClient {
 					data = in.readLine();
 					System.out.println("OK Received: "+ data);
 					
-					}
-				}
+					
+					
+				//}
 			}
 			
 			
