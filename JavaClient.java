@@ -1,160 +1,166 @@
 import java.net.*;
 import java.io.*;
+
 public class JavaClient {
-	public static void main (String args[]) {
-	// arguments supply message and hostname of destination
-	Socket s = null;
-		try{
-			int serverPort = 50000;
-			s = new Socket("127.0.0.1", serverPort);
-			BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-			DataOutputStream out = new DataOutputStream( s.getOutputStream());
-			
-			//Initialise variables
-			String data;
-			boolean flag = true;
-			boolean avail = true;
-			String ST = null;
-			int SID = 0;
-			int JOBID = 0;
-			int wait = 0;
-			int LW = 0;
-			int  nRecs = 0;
-			String[] REDY = null;
-			String[] serverI;
-			String[] serverState = null;
-			
-			
-			// sending the 'HELO' message to server and waiting for reply
-			out.write(("HELO\n").getBytes()); 
+
+public static void main(String args[]) {
+
+	Socket socket = null;
+
+	try {
+
+	int serverPort = 50000;
+	socket = new Socket("127.0.0.1", serverPort);
+
+	BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+	DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+
+	String data;
+	boolean isAvailable = true;
+	String serverType = null;
+	int serverID = 0;
+	int jobID = 0;
+	int waitTime = 0;
+	int lowestWaitTime = 0;
+	int numberOfRecords = 0;
+	String[] readyInfo = null;
+	String[] serverData = null;
+	String[] serverInfo = null;
+
+	// Send HELO message to the server
+	out.write(("HELO\n").getBytes());
+	out.flush();
+	data = input.readLine();
+
+	// Send AUTH message with username to login
+	out.write(("AUTH vboxuser\n").getBytes());
+	out.flush();
+	data = input.readLine();
+
+	while (true) {
+		// Send REDY message to receive information about the next job
+		out.write(("REDY\n").getBytes());
+		out.flush();
+		data = input.readLine();
+
+		readyInfo = data.split(" ");
+
+
+		if (readyInfo[0].equals("JOBN")) {
+			System.out.println(data);
+			// Query the server state information for available servers
+			out.write(("GETS Avail " + readyInfo[4] + " " + readyInfo[5] + " " + readyInfo[6] + "\n").getBytes());
 			out.flush();
-			// reading the reply from the server and printing to the command line
-			data = in.readLine();
-			//System.out.println("HELO Received: "+ data);
-			
-			// sending the 'AUTH' with username to server to login
-			out.write(("AUTH vboxuser\n").getBytes());
+			data = input.readLine();
+
+			serverData = data.split(" ");
+			numberOfRecords = Integer.parseInt(serverData[1]);
+
+			// Send OK command to acknowledge the request
+			out.write(("OK\n").getBytes());
 			out.flush();
-			data = in.readLine();
-			//System.out.println("AUTH Received: "+ data);
-			
-			
-			
-			// implementing while loop for job dispacher
-			while(true){
-				// send the 'REDY' message to recieve the information about the next job
-				out.write(("REDY\n").getBytes());
+
+			if (numberOfRecords == 0) {
+				data = input.readLine();
+
+				// Query the server state information for capable servers
+				out.write(("GETS Capable " + readyInfo[4] + " " + readyInfo[5] + " " + readyInfo[6] + "\n").getBytes());
 				out.flush();
-				data = in.readLine();
-				
-				//System.out.println("Received!: "+ data);
-				
-				REDY = data.split(" ");
-				if(REDY[0].equals("JOBN")) {
-					// qeries the server state information and stores it in data
-					out.write(("GETS Avail " + REDY[4] + " " + REDY[5] + " " + REDY[6] + "\n").getBytes());
-					//System.out.println("GETS Avail " + REDY[4] + " " + REDY[5] + " " + REDY[6] + "");
-					out.flush();
-					data = in.readLine();
-					//System.out.println("Gets Ret: "+ data);
-					//split the variable data so find the server Info 
-					serverI = data.split(" "); //split the messages by the gaps in the message
-					nRecs = Integer.parseInt(serverI[1]); //save in nRecs what's after the first gap
-					//System.out.println(nRecs);
-					if(nRecs == 0){
-						avail = false;
-						// sends the OK command
-						out.write(("OK\n").getBytes());
-						out.flush();
-						data = in.readLine();
-						// qeries the server state information and stores it in data
-						out.write(("GETS Capable " + REDY[4] + " " + REDY[5] + " " + REDY[6] + "\n").getBytes());
-						//System.out.println("GETS Capable " + REDY[4] + " " + REDY[5] + " " + REDY[6] + "");
-						out.flush();
-						data = in.readLine();
-						//System.out.println("Gets Ret: "+ data);
-						//split the variable data so find the server Info 
-						serverI = data.split(" "); //split the messages by the gaps in the message
-						nRecs = Integer.parseInt(serverI[1]); //save in nRecs what's after the first gap
-						//System.out.println(nRecs);
-					
-					
-						// sends the OK command
-						out.write(("OK\n").getBytes());
-						out.flush();
-					
-						
-						for(int i = 0; i < nRecs; i++) {
-							//split the return from gets
-							data = in.readLine();
-							//System.out.println("data: " + data);
-							serverState = data.split(" ");
-							//System.out.println("Server: " + serverState[0] + " " + i + " " + Integer.parseInt(serverState[1]));
-							if(!serverState[2].equals("active")){
-								SID = Integer.parseInt(serverState[1]);
-								ST = serverState[0];
-								flag = false;
-								avail = false;
-							}
-							wait = Integer.parseInt(serverState[7]); //store the number of waiting jobs on a server
-							if(wait <= LW && avail) {
-								LW = wait;
-								SID = Integer.parseInt(serverState[1]);
-								ST = serverState[0];
-								flag = false;
-							}
-						}
-						if(flag) { 
-							SID = Integer.parseInt(serverState[1]);
-							ST = serverState[0];
-						}
-						flag = true;
-						avail = false;
+				data = input.readLine();
+
+				serverData = data.split(" ");
+				numberOfRecords = Integer.parseInt(serverData[1]);
+
+
+				// Send OK command to acknowledge the request
+				out.write(("OK\n").getBytes());
+				out.flush();
+
+				for (int i = 0; i < numberOfRecords; i++) {
+					data = input.readLine();
+					serverInfo = data.split(" ");
+
+					if (!serverInfo[2].equals("active")) {
+						serverID = Integer.parseInt(serverInfo[1]);
+						serverType = serverInfo[0];
+						isAvailable = false;
 					}
-					if(avail) {
-						// sends the OK command
-						out.write(("OK\n").getBytes());
-						out.flush();
-						
-						for(int i = 0; i < nRecs; i++) {
-							data = in.readLine();
-							//System.out.println("data: " + data);
-							serverState = data.split(" ");
-							if(i == 0) {
-								SID = Integer.parseInt(serverState[1]);
-								ST = serverState[0];
-							}
-						}
+
+					waitTime = Integer.parseInt(serverInfo[7]);
+
+					if (waitTime <= lowestWaitTime && isAvailable) {
+						lowestWaitTime = waitTime;
+						serverID = Integer.parseInt(serverInfo[1]);
+						serverType = serverInfo[0];
+						isAvailable = false;
 					}
-					avail = true;
-						
-					// sends the OK command
-					out.write(("OK\n").getBytes());
-					out.flush();
-					data = in.readLine();
-					//System.out.println("OKOK: " + data);
-					
-					JOBID = Integer.parseInt(REDY[2]);
-					
-					out.write(("SCHD "+JOBID+" "+ST+" "+SID+"\n").getBytes());
-					//System.out.println("SCHD "+JOBID+" "+ST+" "+SID+"");
-					out.flush();
-					data = in.readLine();
-					
-					//System.out.println("ReceivedB: "+ data);
 				}
-				else if(REDY[0].equals("NONE")) {
-					break;
+
+				if (isAvailable) {
+					serverID = Integer.parseInt(serverInfo[1]);
+					serverType = serverInfo[0];
+					isAvailable = false;
 				}
 			}
-			// sending the 'QUIT' message to the server
-			out.write(("QUIT\n").getBytes());
+			
+			if (isAvailable) {
+				for (int i = 0; i < numberOfRecords; i++) {
+					data = input.readLine();
+					serverInfo = data.split(" ");
+
+					if (i == 0) {
+						serverID = Integer.parseInt(serverInfo[1]);
+						serverType = serverInfo[0];
+					}
+				}
+			}
+
+			isAvailable = true;
+
+			// Send OK command to acknowledge the request
+			out.write(("OK\n").getBytes());
 			out.flush();
-		}catch (UnknownHostException e){
-			System.out.println("Sock:"+e.getMessage());
-		}catch (EOFException e){System.out.println("EOF:"+e.getMessage());
-		}catch (IOException e){System.out.println("IO:"+e.getMessage());}
-	finally {if(s!=null) try {s.close();}catch (IOException e)
-	{System.out.println("close:"+e.getMessage());}}
+			data = input.readLine();
+
+			jobID = Integer.parseInt(readyInfo[2]);
+
+			// Schedule the job on the selected server
+			out.write(("SCHD " + jobID + " " + serverType + " " + serverID + "\n").getBytes());
+			out.flush();
+			data = input.readLine();
+			
+			}
+			
+			else if (readyInfo[0].equals("NONE")) {
+			// No more jobs to process, exit the loop
+			break;
+		}
+	}
+
+	// Send QUIT message to the server
+	out.write(("QUIT\n").getBytes());
+	out.flush();
+
+	}
+	catch (UnknownHostException e) {
+	System.out.println("Sock:" + e.getMessage());
+	}
+	catch (EOFException e) {
+	System.out.println("EOF:" + e.getMessage());
+	}
+	catch (IOException e) {
+	System.out.println("IO:" + e.getMessage());
+	}
+	finally {
+		if (socket != null) {
+			try {
+				socket.close();
+			}
+			catch (IOException e) {
+			System.out.println("close:" + e.getMessage());
+			}
+		}
 	}
 }
+}
+
