@@ -1,6 +1,6 @@
 import java.net.*;
 import java.io.*;
-public class TCPClient {
+public class JavaClient {
 	public static void main (String args[]) {
 	// arguments supply message and hostname of destination
 	Socket s = null;
