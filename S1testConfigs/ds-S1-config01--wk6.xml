@@ -10,10 +10,8 @@
   </servers>
   <jobs>
 	<job type="short" minRunTime="1" maxRunTime="300" populationRate="30" />
-	<job type="medium" minRunTime="301" maxRunTime="1800" populationRate="40" />
-	<job type="long" minRunTime="1801" maxRunTime="100000" populationRate="30" />
   </jobs>
-  <workload type="unknown" minLoad="50" maxLoad="60" />
+  <workload type="unknown" minLoad="1" maxLoad="1" />
   <termination>
 	<condition type="endtime" value="604800" />
 	<condition type="jobcount" value="20" />

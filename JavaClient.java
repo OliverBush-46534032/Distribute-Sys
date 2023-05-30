@@ -46,8 +46,7 @@ public static void main(String args[]) {
 		readyInfo = data.split(" ");
 
 
-		if (readyInfo[0].equals("JOBN")) {
-			System.out.println(data);
+		if (readyInfo[0].equals("JOBN") || readyInfo[0].equals("JOBP")) {
 			// Query the server state information for available servers
 			out.write(("GETS Avail " + readyInfo[4] + " " + readyInfo[5] + " " + readyInfo[6] + "\n").getBytes());
 			out.flush();
